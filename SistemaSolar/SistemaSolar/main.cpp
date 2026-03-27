@@ -10,6 +10,7 @@
 //para la lectura de los shaders:
 #include "lecturaShader_0_9.h"
 
+//añadir cambios al git
 
 /*
 CONTROLES DEL PROGRAMA:
