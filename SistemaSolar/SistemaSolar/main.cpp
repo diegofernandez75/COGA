@@ -30,6 +30,8 @@ W / S: inclinación vertical de la cámara
 EXTRAS:
 ESPACIO Pausar / reanudar el movimiento del sistema solar
 letra o Mostrar / ocultar las órbitas de los planetas
+letra M Aumentar velocidad de simulación (+0.5)
+letra N Disminuir velocidad de simulación (-0.5)
 
 MODO TELESCOPIO (solo con el sistema pausado):
 A → Enfocar Mercurio desde la Tierra
@@ -218,15 +220,15 @@ void procesarInput(GLFWwindow* window, int* modoCamara,
         if (*camDistancia < 5.0f) *camDistancia = 5.0f;
     }
 
-    // Control de velocidad de simulación (+ / -)
-    int teclaMasAhora = (glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS);
+    // Control de velocidad de simulación (M: aumenta, N: reduce)
+    int teclaMasAhora = (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS);
     if (teclaMasAhora && *teclaMasAntes == GLFW_RELEASE) {
         *velocidadSimulacion += 0.5f;
         if (*velocidadSimulacion > 10.0f) *velocidadSimulacion = 10.0f;
     }
     *teclaMasAntes = teclaMasAhora;
 
-    int teclaMenosAhora = (glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS);
+    int teclaMenosAhora = (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS);
     if (teclaMenosAhora && *teclaMenosAntes == GLFW_RELEASE) {
         *velocidadSimulacion -= 0.5f;
         if (*velocidadSimulacion < 0.1f) *velocidadSimulacion = 0.1f;
