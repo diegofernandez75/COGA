@@ -1,9 +1,5 @@
-﻿  glad.c
-  main.cpp
-C:\Users\iagob\Desktop\Repo COGA\COGA\SistemaSolar\SistemaSolar\main.cpp(339,35): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
-  LINK : no se encontró C:\Users\iagob\Desktop\Repo COGA\COGA\SistemaSolar\Debug\SistemaSolar.exe o no lo generó el último vínculo incremental; ejecutando vínculo completo
-LINK : warning LNK4098: la biblioteca predeterminada'MSVCRT' entra en conflicto con otras bibliotecas; use la biblioteca /NODEFAULTLIB:biblioteca
+﻿  main.cpp
+C:\Users\iagob\Desktop\Repo COGA\COGA\SistemaSolar\SistemaSolar\main.cpp(379,35): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
   SistemaSolar.vcxproj -> C:\Users\iagob\Desktop\Repo COGA\COGA\SistemaSolar\Debug\SistemaSolar.exe
   Copiando glfw3.dll al directorio de salida...
-  C:\Users\iagob\Desktop\Repo COGA\COGA\SistemaSolar\SistemaSolar\glad\glfw3.dll
-  1 archivo(s) copiado(s)
+  0 archivo(s) copiado(s)
