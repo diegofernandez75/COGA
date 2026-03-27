@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <math.h>
 
+//para la lectura de los shaders:
+#include "lecturaShader_0_9.h"
+
 
 /*
 CONTROLES DEL PROGRAMA:
@@ -17,8 +20,8 @@ ESC  Cerrar la aplicación
 CAMARAS:
 0 Cámara libre orbital
 1 Cámara desde el Sol mirando hacia los planetas interiores
-2 Cámara desde la Luna enfocando la Tierra
-3 Cámara desde Saturno mirando al Sol
+2 Cámara desde fuera de la luna enfocando a la Tierra
+3 Cámara desde el fondo mirando al Sol
 
 MOVIMIENTO:
 Flechas izquierda/derecha: rotación horizontal
@@ -63,18 +66,7 @@ typedef struct {
     unsigned int vao; int numIndices;
 } CuerpoCeleste;
 
-// --- SHADERS ---
-const char* vertexShaderSource =
-"#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"uniform mat4 model; uniform mat4 view; uniform mat4 projection;\n"
-"void main() { gl_Position = projection * view * model * vec4(aPos, 1.0); }\0";
 
-const char* fragmentShaderSource =
-"#version 330 core\n"
-"out vec4 FragColor;\n"
-"uniform vec3 colorPlaneta;\n"
-"void main() { FragColor = vec4(colorPlaneta, 1.0); }\0";
 
 // Lógica Temporal 
 void actualizarMovimiento(CuerpoCeleste* cuerpo, float lapsoTime) {
@@ -133,35 +125,24 @@ FiguraGrafica crearOrbita(int puntos) {
     free(vertices); return fig;
 }
 
-// Compilación de shaders
 
-unsigned int compilarShaders() {
-    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL); glCompileShader(vertexShader);
-    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL); glCompileShader(fragmentShader);
-    unsigned int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader); glAttachShader(shaderProgram, fragmentShader); glLinkProgram(shaderProgram);
-    glDeleteShader(vertexShader); glDeleteShader(fragmentShader);
-    return shaderProgram;
-}
 
 
 // Inicialización del array de cuerpos celestes
 
 void inicializarCuerpos(CuerpoCeleste* c, unsigned int vao, int numIndices) {
     //                px      py    pz    angRot angTras velRot velTras escala  color
-    c[IDX_SOL] = { 0.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.5f,  0.0f,  2.0f,  glm::vec3(1.0f,  0.8f,  0.0f),  vao, numIndices };
-    c[IDX_MERCURIO] = { 3.0f,  0.0f, 0.0f, 0.0f, 0.0f, 2.0f,  2.0f,  0.3f,  glm::vec3(0.6f,  0.5f,  0.4f),  vao, numIndices };
-    c[IDX_VENUS] = { 5.0f,  0.0f, 0.0f, 0.0f, 0.0f, 1.5f,  1.5f,  0.5f,  glm::vec3(0.9f,  0.7f,  0.4f),  vao, numIndices };
-    c[IDX_TIERRA] = { 7.0f,  0.0f, 0.0f, 0.0f, 0.0f, 2.0f,  1.0f,  0.6f,  glm::vec3(0.1f,  0.4f,  1.0f),  vao, numIndices };
-    c[IDX_LUNA] = { 1.5f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f,  3.0f,  0.2f,  glm::vec3(0.75f, 0.75f, 0.75f), vao, numIndices };
-    c[IDX_MARTE] = { 9.0f,  0.0f, 0.0f, 0.0f, 0.0f, 1.8f,  0.8f,  0.4f,  glm::vec3(1.0f,  0.3f,  0.1f),  vao, numIndices };
-    c[IDX_JUPITER] = { 15.0f, 0.0f, 0.0f, 0.0f, 0.0f, 5.0f,  0.4f,  1.5f,  glm::vec3(0.8f,  0.6f,  0.4f),  vao, numIndices };
-    c[IDX_SATURNO] = { 20.0f, 0.0f, 0.0f, 0.0f, 0.0f, 4.5f,  0.3f,  1.3f,  glm::vec3(0.9f,  0.8f,  0.5f),  vao, numIndices };
-    c[IDX_URANO] = { 25.0f, 0.0f, 0.0f, 0.0f, 0.0f, 3.0f,  0.2f,  1.0f,  glm::vec3(0.5f,  0.8f,  1.0f),  vao, numIndices };
-    c[IDX_NEPTUNO] = { 30.0f, 0.0f, 0.0f, 0.0f, 0.0f, 3.2f,  0.15f, 1.0f,  glm::vec3(0.2f,  0.3f,  0.9f),  vao, numIndices };
-    c[IDX_ISS] = { 0.8f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  5.0f,  0.08f, glm::vec3(0.9f,  0.9f,  0.9f),  vao, numIndices };
+    c[IDX_SOL] = { 0.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.5f,  0.0f,  2.4f,  glm::vec3(1.0f,  0.82f, 0.05f), vao, numIndices };
+    c[IDX_MERCURIO] = { 4.5f,  0.0f, 0.0f, 0.0f, 0.0f, 2.0f,  1.60f, 0.40f, glm::vec3(0.62f, 0.54f, 0.45f), vao, numIndices };
+    c[IDX_VENUS] = { 7.0f,  0.0f, 0.0f, 0.0f, 0.0f, 1.5f,  1.18f, 0.65f, glm::vec3(0.85f, 0.42f, 0.32f), vao, numIndices };
+    c[IDX_TIERRA] = { 10.0f,  0.0f, 0.0f, 0.0f, 0.0f, 2.0f,  1.00f, 0.78f, glm::vec3(0.15f, 0.55f, 0.95f), vao, numIndices };
+    c[IDX_LUNA] = { 2.0f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f,  3.0f,  0.26f, glm::vec3(0.78f, 0.78f, 0.78f), vao, numIndices };
+    c[IDX_MARTE] = { 13.0f,  0.0f, 0.0f, 0.0f, 0.0f, 1.8f,  0.81f, 0.52f, glm::vec3(0.78f, 0.36f, 0.24f), vao, numIndices };
+    c[IDX_JUPITER] = { 20.0f, 0.0f, 0.0f, 0.0f, 0.0f, 5.0f,  0.44f, 1.90f, glm::vec3(0.82f, 0.66f, 0.48f), vao, numIndices };
+    c[IDX_SATURNO] = { 27.0f, 0.0f, 0.0f, 0.0f, 0.0f, 4.5f,  0.32f, 1.65f, glm::vec3(0.95f, 0.72f, 0.78f), vao, numIndices };
+    c[IDX_URANO] = { 34.0f, 0.0f, 0.0f, 0.0f, 0.0f, 3.0f,  0.23f, 1.20f, glm::vec3(0.58f, 0.84f, 0.95f), vao, numIndices };
+    c[IDX_NEPTUNO] = { 41.0f, 0.0f, 0.0f, 0.0f, 0.0f, 3.2f,  0.18f, 1.20f, glm::vec3(0.28f, 0.38f, 0.88f), vao, numIndices };
+    c[IDX_ISS] = { 1.1f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  5.0f,  0.11f, glm::vec3(0.92f, 0.92f, 0.92f), vao, numIndices };
 }
 
 
@@ -225,13 +206,13 @@ glm::mat4 calcularVista(int modoCamara, float camDistancia, float camAnguloH, fl
         view = glm::rotate(view, glm::radians(camAnguloH), glm::vec3(0.0f, 1.0f, 0.0f));
     }
     else if (modoCamara == 1) { // Desde el Sol mirando hacia los planetas interiores
-        view = glm::lookAt(glm::vec3(0.0f, 2.5f, 4.0f), glm::vec3(10.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        view = glm::lookAt(glm::vec3(0.0f, 4.0f, 6.0f), glm::vec3(15.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     }
     else if (modoCamara == 2) { // Desde la Luna mirando a la Tierra
-        view = glm::lookAt(posLuna + glm::vec3(0.0f, 0.3f, 0.0f), posTierra, glm::vec3(0.0f, 1.0f, 0.0f));
+        view = glm::lookAt(posLuna + glm::vec3(0.0f, 0.6f, 0.0f), posTierra, glm::vec3(0.0f, 1.0f, 0.0f));
     }
     else if (modoCamara == 3) { // Desde Saturno mirando al Sol
-        view = glm::lookAt(posSaturno + glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        view = glm::lookAt(posSaturno + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     }
     return view;
 }
@@ -241,7 +222,7 @@ glm::mat4 calcularVista(int modoCamara, float camDistancia, float camAnguloH, fl
 void dibujarOrbitas(int uModel, int uColor, FiguraGrafica moldeOrbita, glm::vec3 posTierra, float pxLuna) {
     glUniform3f(uColor, 0.3f, 0.3f, 0.3f);
     glBindVertexArray(moldeOrbita.vao);
-    float radios[] = { 3.0f, 5.0f, 7.0f, 9.0f, 15.0f, 20.0f, 25.0f, 30.0f };
+    float radios[] = { 4.5f, 7.0f, 10.0f, 13.0f, 20.0f, 27.0f, 34.0f, 41.0f };
     for (int i = 0; i < 8; i++) {
         glm::mat4 mOrb = glm::scale(glm::mat4(1.0f), glm::vec3(radios[i]));
         glUniformMatrix4fv(uModel, 1, GL_FALSE, glm::value_ptr(mOrb)); glDrawArrays(GL_LINE_LOOP, 0, moldeOrbita.numIndices);
@@ -316,7 +297,16 @@ int main() {
     glfwMakeContextCurrent(window); glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress); glEnable(GL_DEPTH_TEST);
 
-    unsigned int shaderProgram = compilarShaders();
+    //compilacion y lectura de los shaders
+    GLuint shaderProgram = setShaders("SistemaSolar/shader.vert", "SistemaSolar/shader.frag");
+    if (shaderProgram == 0) {
+        shaderProgram = setShaders("shader.vert", "shader.frag");
+    }
+    if (shaderProgram == 0) {
+        printf("Error: no se pudieron cargar los shaders\n");
+        glfwTerminate();
+        return -1;
+    }
 
     FiguraGrafica moldeEsfera = crearEsfera(1.0f, 36, 18);
     FiguraGrafica moldeOrbita = crearOrbita(100);
@@ -332,7 +322,7 @@ int main() {
     int uColor = glGetUniformLocation(shaderProgram, "colorPlaneta");
 
     // Variables de cámara
-    float camDistancia = 70.0f, camAnguloH = 0.0f, camAnguloV = 35.0f;
+    float camDistancia = 90.0f, camAnguloH = 0.0f, camAnguloV = 35.0f;
     int modoCamara = 0;
 
     // Estado de la simulación
