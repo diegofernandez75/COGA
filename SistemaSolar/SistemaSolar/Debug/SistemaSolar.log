@@ -1,5 +1,5 @@
 ﻿  main.cpp
-C:\Users\iagob\Desktop\Repo COGA\COGA\SistemaSolar\SistemaSolar\main.cpp(379,35): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\iagob\Desktop\Repo COGA\COGA\SistemaSolar\SistemaSolar\main.cpp(384,35): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
   SistemaSolar.vcxproj -> C:\Users\iagob\Desktop\Repo COGA\COGA\SistemaSolar\Debug\SistemaSolar.exe
   Copiando glfw3.dll al directorio de salida...
   0 archivo(s) copiado(s)

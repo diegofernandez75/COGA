@@ -213,7 +213,7 @@ void procesarInput(GLFWwindow* window, int* modoCamara,
         if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) *camDistancia -= 40.0f * deltaTime;
         if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) *camDistancia += 40.0f * deltaTime;
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) *camAnguloV += 30.0f * deltaTime;
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) *camAnguloV -= 30.0f * deltaTime;
+        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) *camAnguloV -= 30.0f * deltaTime;
         if (*camDistancia < 5.0f) *camDistancia = 5.0f;
     }
 }
@@ -245,19 +245,24 @@ glm::mat4 calcularVista(int modoCamara, int modoTelescopio,
         view = glm::lookAt(posSaturno + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     }
     else if (modoCamara == 4) { // Modo telescopio: desde la Tierra hacia el planeta objetivo
-        // Tabla de índices de CuerpoCeleste para cada objetivo del telescopio
         int objetivos[] = { IDX_MERCURIO, IDX_VENUS, IDX_MARTE, IDX_JUPITER, IDX_SATURNO, IDX_URANO, IDX_NEPTUNO };
 
         if (modoTelescopio >= 0 && modoTelescopio <= 6) {
             int idx = objetivos[modoTelescopio];
-            // Posición absoluta del planeta objetivo
+
             glm::vec3 posObjetivo = glm::vec3(
-                cosf(c[idx].anguloTraslacion) * c[idx].px, 0.0f,
+                cosf(c[idx].anguloTraslacion) * c[idx].px,
+                0.0f,
                 -sinf(c[idx].anguloTraslacion) * c[idx].px
             );
-            // Cámara ligeramente elevada sobre la Tierra, apuntando al planeta
-            glm::vec3 ojoTelescopo = posTierra + glm::vec3(0.0f, 0.5f, 0.0f);
-            view = glm::lookAt(ojoTelescopo, posObjetivo, glm::vec3(0.0f, 1.0f, 0.0f));
+
+            // Dirección Tierra -> planeta
+            glm::vec3 dir = glm::normalize(posObjetivo - posTierra);
+
+            // Sacamos la cámara un poco fuera de la Tierra
+            glm::vec3 ojoTelescopio = posTierra + dir * 1.3f + glm::vec3(0.0f, 0.15f, 0.0f);
+
+            view = glm::lookAt(ojoTelescopio, posObjetivo, glm::vec3(0.0f, 1.0f, 0.0f));
         }
     }
 
