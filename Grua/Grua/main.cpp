@@ -125,10 +125,12 @@ int main()
 
         processInput(window);
 
-        // Matriz de proyeccion en perspectiva (45 grados de FOV)
+        // Matriz de proyeccion dinámica (evita que se estire la imagen al redimensionar)
+        int width, height;
+        glfwGetFramebufferSize(window, &width, &height);
         glm::mat4 projection = glm::perspective(
             glm::radians(45.0f),
-            (float)SCR_WIDTH / (float)SCR_HEIGHT,
+            (float)width / (float)height,
             1.0f, 200.0f
         );
 
