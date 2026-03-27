@@ -32,6 +32,7 @@ ESPACIO Pausar / reanudar el movimiento del sistema solar
 letra o Mostrar / ocultar las órbitas de los planetas
 letra M Aumentar velocidad de simulación (+0.5)
 letra N Disminuir velocidad de simulación (-0.5)
+letra B Reiniciar velocidad de simulación (1.0)
 
 MODO TELESCOPIO (solo con el sistema pausado):
 A → Enfocar Mercurio desde la Tierra
@@ -40,7 +41,11 @@ D → Enfocar Marte   desde la Tierra
 F → Enfocar Júpiter desde la Tierra
 G → Enfocar Saturno desde la Tierra
 H → Enfocar Urano   desde la Tierra
-J → Enfocar Neptuno desde la Tierraa
+J → Enfocar Neptuno desde la Tierra
+M → Aumenta la velocidad sistema
+N→ Reduce la velocidad del sistema
+B → Reinicia la velocidad del sistema
+
 */
 
 
@@ -169,7 +174,7 @@ void procesarInput(GLFWwindow* window, int* modoCamara,
     float* camDistancia, float* camAnguloH, float* camAnguloV,
     int* pausado, int* mostrarOrbitas, int* modoTelescopio,
     int* teclaEspacioAntes, int* teclaOAntes,
-    float* velocidadSimulacion, int* teclaMasAntes, int* teclaMenosAntes,
+    float* velocidadSimulacion, int* teclaMasAntes, int* teclaMenosAntes, int* teclaBAntes,
     float deltaTime)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, 1);
@@ -234,6 +239,12 @@ void procesarInput(GLFWwindow* window, int* modoCamara,
         if (*velocidadSimulacion < 0.1f) *velocidadSimulacion = 0.1f;
     }
     *teclaMenosAntes = teclaMenosAhora;
+
+    int teclaBAhora = (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS);
+    if (teclaBAhora && *teclaBAntes == GLFW_RELEASE) {
+        *velocidadSimulacion = 1.0f;
+    }
+    *teclaBAntes = teclaBAhora;
 }
 
 // Cálculo de la vista según modo de cámara
@@ -397,6 +408,7 @@ int main() {
     int teclaOAntes = GLFW_RELEASE;
     int teclaMasAntes = GLFW_RELEASE;
     int teclaMenosAntes = GLFW_RELEASE;
+    int teclaBAntes = GLFW_RELEASE;
 
     float velocidadSimulacion = 1.0f;
     float lastFrame = 0.0f, currentFrame, deltaTime;
@@ -407,7 +419,7 @@ int main() {
         procesarInput(window, &modoCamara, &camDistancia, &camAnguloH, &camAnguloV,
             &pausado, &mostrarOrbitas, &modoTelescopio,
             &teclaEspacioAntes, &teclaOAntes,
-            &velocidadSimulacion, &teclaMasAntes, &teclaMenosAntes,
+            &velocidadSimulacion, &teclaMasAntes, &teclaMenosAntes, &teclaBAntes,
             deltaTime);
 
         glClearColor(0.01f, 0.01f, 0.015f, 1.0f); glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
