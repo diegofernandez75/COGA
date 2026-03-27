@@ -1,3 +1,22 @@
+/*
+CONTROLES DE LA GRUA:
+
+MOVIMIENTO:
+W   Acelerar
+X   Frenar / Marcha atrás
+A / D   Girar izquierda / derecha
+
+BRAZO:
+K   Subir el brazo (articulación)
+L   Bajar el brazo (articulación)
+
+CAMARA:
+1   Cámara en 1ª persona (Cabina)
+2   Cámara en 3ª persona (Trasera)
+3   Cámara cenital (Con control por flechas)
+        Flechas (Izquierda/Derecha/Arriba/Abajo) Rotar cámara en modo 3
+*/
+
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <glm/glm.hpp>
@@ -10,7 +29,7 @@
 #include "objetos.h"
 #include "camara.h"
 
-// Tamaño de la ventana
+// Tamaño de la ventana al iniciar
 const unsigned int SCR_WIDTH  = 1200;
 const unsigned int SCR_HEIGHT = 800;
 
@@ -22,7 +41,7 @@ float lastTime = 0.0f;
 float rotacionRuedas = 0.0f; // Rotacion acumulada de las ruedas
 
 // Estructura de cada parte de la grua
-// px,py,pz = posicion | angulo_trans = angulo de giro | velocidad = solo la base la usa
+// px,py,pz = posicion | angulo_trans = angulo de giro | velocidad = solo la base la usa, resto heredan
 // sx,sy,sz = escala en cada eje | VAO = identificador del buffer de vertices
 typedef struct {
     float px, py, pz;
@@ -36,17 +55,17 @@ typedef struct {
 // Instanciamos cámara
 CamaraGrua miCamara(3);
 
-// Medidas objetos del pdf transformacion (ahora con colores)
+// Medidas objetos sacados del pdf transformacion 
 objeto baseGrua       = { 0.0f,  1.5f, 0.5f, 0.0f, 0.0f, 10.0f, 2.0f, 4.0f, 0, glm::vec3(1.0f, 0.0f, 0.0f) };
 objeto cabinaGrua     = { 5.0f,  1.0f, 0.0f, 0.0f, 0.0f,  2.0f, 3.0f, 4.0f, 0, glm::vec3(1.0f, 0.0f, 0.0f) };
 objeto articulacion   = {-0.4f,  0.4f, 0.0f,35.0f, 0.0f,  1.0f, 1.0f, 1.0f, 0, glm::vec3(0.0f, 0.0f, 1.0f) };
 objeto brazo          = { 0.0f,  3.0f, 0.0f, 0.0f, 0.0f,  0.5f, 6.0f, 0.5f, 0, glm::vec3(0.0f, 1.0f, 1.0f) };
 
 // RUEDAS (Posicion relativa a la base)
-objeto ruedaFL = { 4.0f, -0.7f,  2.2f, 0.0f, 0.0f, 1.5f, 1.5f, 0.4f, 0, glm::vec3(0.05f, 0.05f, 0.05f) };
-objeto ruedaFR = { 4.0f, -0.7f, -2.2f, 0.0f, 0.0f, 1.5f, 1.5f, 0.4f, 0, glm::vec3(0.05f, 0.05f, 0.05f) };
-objeto ruedaBL = {-4.0f, -0.7f,  2.2f, 0.0f, 0.0f, 1.5f, 1.5f, 0.4f, 0, glm::vec3(0.05f, 0.05f, 0.05f) };
-objeto ruedaBR = {-4.0f, -0.7f, -2.2f, 0.0f, 0.0f, 1.5f, 1.5f, 0.4f, 0, glm::vec3(0.05f, 0.05f, 0.05f) };
+objeto ruedaDI = { 4.0f, -0.7f,  2.2f, 0.0f, 0.0f, 1.5f, 1.5f, 0.4f, 0, glm::vec3(0.05f, 0.05f, 0.05f) };
+objeto ruedaDD = { 4.0f, -0.7f, -2.2f, 0.0f, 0.0f, 1.5f, 1.5f, 0.4f, 0, glm::vec3(0.05f, 0.05f, 0.05f) };
+objeto ruedaAI = {-4.0f, -0.7f,  2.2f, 0.0f, 0.0f, 1.5f, 1.5f, 0.4f, 0, glm::vec3(0.05f, 0.05f, 0.05f) };
+objeto ruedaAD = {-4.0f, -0.7f, -2.2f, 0.0f, 0.0f, 1.5f, 1.5f, 0.4f, 0, glm::vec3(0.05f, 0.05f, 0.05f) };
 
 // Callbacks
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -76,10 +95,9 @@ int main()
     glEnable(GL_DEPTH_TEST);
 
     // Cargar shaders (vertex + fragment). Esperan los uniforms: model, view, projection
-    // Ajustado para que funcione y no de errores de rutas
     GLuint shaderProgram = setShaders("Grua/shader.vert", "Grua/shader.frag");
     if (shaderProgram == 0) {
-        // Fallback en caso de que el directorio de trabajo sea directamente donde están los shaders
+        // Fallback en caso de que esten en el directorio principal
         shaderProgram = setShaders("shader.vert", "shader.frag");
     }
 
@@ -97,11 +115,11 @@ int main()
     inicializarCuboColor(0.0f, 1.0f, 1.0f, brazo.VAO,        vboBrazo);  // cian
 
     unsigned int vboRueda;
-    inicializarCuboColor(0.2f, 0.2f, 0.2f, ruedaFL.VAO, vboRueda); // Gris
+    inicializarCuboColor(0.2f, 0.2f, 0.2f, ruedaDI.VAO, vboRueda); // Gris
 
-    ruedaFR.VAO = ruedaFL.VAO;
-    ruedaBL.VAO = ruedaFL.VAO; 
-    ruedaBR.VAO = ruedaFL.VAO;
+    ruedaDD.VAO = ruedaDI.VAO;
+    ruedaAI.VAO = ruedaDI.VAO; 
+    ruedaAD.VAO = ruedaDI.VAO;
 
     // Dos colores para el suelo modular infinito (PLANOS)
     unsigned int vaoSueloA, vboSueloA;
@@ -118,14 +136,14 @@ int main()
     // Bucle principal de renderizado
     while (!glfwWindowShouldClose(window))
     {
-        // Calcular lapsoTime para movimiento suave
+        // Calcular lapsoTime para movimiento suave requisito del pdf
         float currentTime = (float)glfwGetTime();
         lapsoTime  = currentTime - lastTime;
         lastTime  = currentTime;
 
         processInput(window);
 
-        // Matriz de proyeccion dinámica (evita que se estire la imagen al redimensionar)
+        // Matriz de proyeccion dinámica -- evita que se estire la imagen al redimensionar
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
         glm::mat4 projection = glm::perspective(
@@ -146,7 +164,7 @@ int main()
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
         // --- Suelo modular infinito (centrado en la grúa) ---
-        int gridRange = 25; // Cantidad de celdas a renderizar alrededor
+        int gridRange = 25; // Cantidad de celdas que se renderizan alrededor de la grúa
         int centerI = (int)std::floor((baseGrua.px + 1.0f) / 2.0f);
         int centerJ = (int)std::floor((baseGrua.pz + 1.0f) / 2.0f);
 
@@ -165,7 +183,7 @@ int main()
             }
         }
 
-        // --- Grua jerarquica ---
+        // === Grua jerarquica ===
         // Todas las piezas hijas heredan la transformacion de la base
 
         // 1. BASE: se traslada a su posicion y rota segun el angulo de direccion
@@ -215,7 +233,7 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         // 5. RUEDAS: hijas de la base, rotan segun la velocidad
-        objeto* ruedas[] = {&ruedaFL, &ruedaFR, &ruedaBL, &ruedaBR};
+        objeto* ruedas[] = {&ruedaDI, &ruedaDD, &ruedaAI, &ruedaAD};
         for (int i = 0; i < 4; ++i) {
             glm::mat4 mRueda = stackBase;
             mRueda = glm::translate(mRueda, glm::vec3(ruedas[i]->px, ruedas[i]->py, ruedas[i]->pz));
@@ -235,7 +253,7 @@ int main()
     glDeleteVertexArrays(1, &cabinaGrua.VAO);   glDeleteBuffers(1, &vboCabina);
     glDeleteVertexArrays(1, &articulacion.VAO); glDeleteBuffers(1, &vboArt);
     glDeleteVertexArrays(1, &brazo.VAO);        glDeleteBuffers(1, &vboBrazo);
-    glDeleteVertexArrays(1, &ruedaFL.VAO);      glDeleteBuffers(1, &vboRueda);
+    glDeleteVertexArrays(1, &ruedaDI.VAO);      glDeleteBuffers(1, &vboRueda);
     glDeleteVertexArrays(1, &vaoSueloA);        glDeleteBuffers(1, &vboSueloA);
     glDeleteVertexArrays(1, &vaoSueloB);        glDeleteBuffers(1, &vboSueloB);
 
@@ -243,6 +261,7 @@ int main()
     return 0;
 }
 
+// Aqui es donde capturamos lo que el usuario pulsa 
 void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -262,15 +281,15 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) articulacion.angulo_trans += 45.0f * lapsoTime;
     if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) articulacion.angulo_trans -= 45.0f * lapsoTime;
 
-    // Límites para evitar que el brazo dé la vuelta completa (Fisica realista)
+    // Límites para evitar que el brazo dé la vuelta completa 
     if (articulacion.angulo_trans > 80.0f) articulacion.angulo_trans = 80.0f;
     if (articulacion.angulo_trans <  0.0f) articulacion.angulo_trans =  0.0f;
 
-    // Limitar velocidad maxima para que no se dispare
+    // Limitar velocidad maxima 
     if (baseGrua.velocidad >  50.0f) baseGrua.velocidad =  50.0f;
     if (baseGrua.velocidad < -50.0f) baseGrua.velocidad = -50.0f;
 
-    // Friccion: la grua va frenando sola si no se pulsa nada
+    // Friccion, la grua va frenando sola si no se pulsa nada
     baseGrua.velocidad *= 0.99f;
 
     // Actualizar rotacion de las ruedas segun velocidad
