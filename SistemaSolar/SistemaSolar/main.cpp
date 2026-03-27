@@ -8,6 +8,7 @@
 #include <math.h>
 
 //para la lectura de los shaders:
+
 #include "lecturaShader_0_9.h"
 
 
@@ -22,29 +23,30 @@ CAMARAS:
 2 Cámara desde fuera de la luna enfocando a la Tierra
 3 Cámara desde el fondo mirando al Sol
 
-MOVIMIENTO (modo 0):
+
+MOVIMIENTO (solo funciona en el modo 0):
 Flechas izquierda/derecha: rotación horizontal
 Flechas arriba/abajo: zoom (acercar/alejar)
-W / S: inclinación vertical de la cámara
+W / E: inclinación vertical de la cámara
 
 EXTRAS:
 ESPACIO Pausar / reanudar el movimiento del sistema solar
-letra o Mostrar / ocultar las órbitas de los planetas
+letra O Mostrar / ocultar las órbitas de los planetas
 letra M Aumentar velocidad de simulación (+0.5)
 letra N Disminuir velocidad de simulación (-0.5)
 letra B Reiniciar velocidad de simulación (1.0)
 
 MODO TELESCOPIO (solo con el sistema pausado):
-A → Enfocar Mercurio desde la Tierra
-S → Enfocar Venus   desde la Tierra
-D → Enfocar Marte   desde la Tierra
-F → Enfocar Júpiter desde la Tierra
-G → Enfocar Saturno desde la Tierra
-H → Enfocar Urano   desde la Tierra
-J → Enfocar Neptuno desde la Tierra
-M → Aumenta la velocidad sistema
-N→ Reduce la velocidad del sistema
-B → Reinicia la velocidad del sistema
+A  Enfocar Mercurio desde la Tierra
+S  Enfocar Venus   desde la Tierra
+D  Enfocar Marte   desde la Tierra
+F  Enfocar Júpiter desde la Tierra
+G  Enfocar Saturno desde la Tierra
+H  Enfocar Urano   desde la Tierra
+J  Enfocar Neptuno desde la Tierra
+M  Aumenta la velocidad sistema
+N  Reduce la velocidad del sistema
+B  Reinicia la velocidad del sistema
 
 */
 
@@ -78,10 +80,10 @@ const unsigned int SCR_HEIGHT = 900;
 #define TELESCOPIO_URANO      5
 #define TELESCOPIO_NEPTUNO    6
 
-// --- ESTRUCTURA BASE ---
+// ESTRUCTURA BASE 
 typedef struct { unsigned int vao, vbo, ebo; int numIndices; } FiguraGrafica;
 
-// --- ESTRUCTURA CUERPO CELESTE (Punto 1) ---
+// ESTRUCTURA CUERPO CELESTE
 typedef struct {
     float px, py, pz;
     float anguloRotacion, anguloTraslacion;
@@ -147,7 +149,7 @@ FiguraGrafica crearOrbita(int puntos) {
     free(vertices); return fig;
 }
 
-// Inicialización del array de cuerpos celestes
+// Inicialización del array de cuerpos celestes con todos los atributos necesarios
 void inicializarCuerpos(CuerpoCeleste* c, unsigned int vao, int numIndices) {
     //                px      py    pz    angRot angTras velRot velTras escala  color
     c[IDX_SOL] = { 0.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.5f,  0.0f,  2.4f,  glm::vec3(1.0f,  0.82f, 0.05f), vao, numIndices };
@@ -185,7 +187,7 @@ void procesarInput(GLFWwindow* window, int* modoCamara,
     if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) { *modoCamara = 2; *modoTelescopio = TELESCOPIO_NINGUNO; }
     if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) { *modoCamara = 3; *modoTelescopio = TELESCOPIO_NINGUNO; }
 
-    // Pausa con ESPACIO (toggle, solo dispara una vez por pulsación)
+    // Pausa con ESPACIO (Solo dispara una vez por pulsación aunque aguantemos pulsado solo funciona en el momento de la pulsación)
     int espacioAhora = glfwGetKey(window, GLFW_KEY_SPACE);
     if (espacioAhora == GLFW_PRESS && *teclaEspacioAntes == GLFW_RELEASE) {
         *pausado = !(*pausado);
@@ -194,17 +196,17 @@ void procesarInput(GLFWwindow* window, int* modoCamara,
     }
     *teclaEspacioAntes = espacioAhora;
 
-    // Mostrar/ocultar órbitas con O (toggle, solo dispara una vez por pulsación)
+    // Mostrar/ocultar órbitas con O (funciona igual que con el espacio
     int oAhora = glfwGetKey(window, GLFW_KEY_O);
     if (oAhora == GLFW_PRESS && *teclaOAntes == GLFW_RELEASE)
         *mostrarOrbitas = !(*mostrarOrbitas);
     *teclaOAntes = oAhora;
 
-    // -------------------------------------------------------
+    
     // MODO TELESCOPIO: solo activo cuando el sistema está pausado.
     // Seleccionan el planeta objetivo y activan modoCamara = 4.
-    // -------------------------------------------------------
-    if (*pausado) {
+   
+    if (*pausado) { //solo pausado, eleccion de las teclas y modo camara
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) { *modoTelescopio = TELESCOPIO_MERCURIO; *modoCamara = 4; }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { *modoTelescopio = TELESCOPIO_VENUS;    *modoCamara = 4; }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) { *modoTelescopio = TELESCOPIO_MARTE;    *modoCamara = 4; }
@@ -267,10 +269,10 @@ glm::mat4 calcularVista(int modoCamara, int modoTelescopio,
     else if (modoCamara == 1) { // Desde el Sol mirando hacia los planetas interiores
         view = glm::lookAt(glm::vec3(0.0f, 4.0f, 6.0f), glm::vec3(15.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     }
-    else if (modoCamara == 2) { // Desde la Luna mirando a la Tierra
+    else if (modoCamara == 2) { // Desde cerca de la luna mirando hacia la Tierra
         view = glm::lookAt(posLuna + glm::vec3(0.0f, 0.6f, 0.0f), posTierra, glm::vec3(0.0f, 1.0f, 0.0f));
     }
-    else if (modoCamara == 3) { // Desde Saturno mirando al Sol
+    else if (modoCamara == 3) { // Desde el fondo mirando hacia el Sol
         view = glm::lookAt(posSaturno + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     }
     else if (modoCamara == 4) { // Modo telescopio: desde la Tierra hacia el planeta objetivo
@@ -285,10 +287,10 @@ glm::mat4 calcularVista(int modoCamara, int modoTelescopio,
                 -sinf(c[idx].anguloTraslacion) * c[idx].px
             );
 
-            // Dirección Tierra -> planeta
+            // Dirección Tierra hacia planeta
             glm::vec3 dir = glm::normalize(posObjetivo - posTierra);
 
-            // Sacamos la cámara un poco fuera de la Tierra
+            // Sacamos la cámara un poco fuera de la Tierra para no ver todo azul
             glm::vec3 ojoTelescopio = posTierra + dir * 1.3f + glm::vec3(0.0f, 0.15f, 0.0f);
 
             view = glm::lookAt(ojoTelescopio, posObjetivo, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -363,7 +365,7 @@ void dibujarSistema(int uModel, int uColor, CuerpoCeleste* c) {
     }
 }
 
-// Re-escalado si modificamos el tamaño de la ventana
+// Re-escalado por si modificamos el tamaño de la ventana
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) { glViewport(0, 0, width, height); }
 
 // MAIN
@@ -384,7 +386,7 @@ int main() {
     FiguraGrafica moldeEsfera = crearEsfera(1.0f, 36, 18);
     FiguraGrafica moldeOrbita = crearOrbita(100);
 
-    // Array de cuerpos celestes (Requisito 3)
+    // Array de cuerpos celestes 
     CuerpoCeleste cuerpos[NUM_CUERPOS];
     inicializarCuerpos(cuerpos, moldeEsfera.vao, moldeEsfera.numIndices);
 
@@ -398,12 +400,12 @@ int main() {
     float camDistancia = 90.0f, camAnguloH = 0.0f, camAnguloV = 35.0f;
     int modoCamara = 0;
 
-    // Estado de la simulación
+    // Estado de la simulación (flags)
     int pausado = 0;  // ESPACIO: pausa/reanuda el movimiento
     int mostrarOrbitas = 1;  // O: muestra/oculta las órbitas
     int modoTelescopio = TELESCOPIO_NINGUNO; // telescopio inactivo al inicio
 
-    // Estado previo de teclas toggle
+    // Estado previo de teclas
     int teclaEspacioAntes = GLFW_RELEASE;
     int teclaOAntes = GLFW_RELEASE;
     int teclaMasAntes = GLFW_RELEASE;
@@ -437,7 +439,7 @@ int main() {
 
         glm::mat4 view = calcularVista(modoCamara, modoTelescopio, camDistancia, camAnguloH, camAnguloV, cuerpos);
 
-        // Requisito 6: Re-escalado
+        // Re-escalado
         int w, h; glfwGetWindowSize(window, &w, &h);
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)w / (float)h, 0.1f, 1000.0f);
 
