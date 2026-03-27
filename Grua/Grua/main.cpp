@@ -272,7 +272,7 @@ void processInput(GLFWwindow* window)
     baseGrua.velocidad *= 0.99f;
 
     // Actualizar rotacion de las ruedas segun velocidad
-    rotacionRuedas += baseGrua.velocidad * 100.0f * lapsoTime;
+    rotacionRuedas -= baseGrua.velocidad * 100.0f * lapsoTime;
 
     // Mover la base en la direccion que apunta segun su angulo
     baseGrua.px += baseGrua.velocidad * (float)sin(glm::radians(baseGrua.angulo_trans)) * lapsoTime;
