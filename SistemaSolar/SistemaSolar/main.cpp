@@ -38,7 +38,7 @@ D → Enfocar Marte   desde la Tierra
 F → Enfocar Júpiter desde la Tierra
 G → Enfocar Saturno desde la Tierra
 H → Enfocar Urano   desde la Tierra
-J → Enfocar Neptuno desde la Tierra
+J → Enfocar Neptuno desde la Tierraa
 */
 
 
@@ -167,6 +167,7 @@ void procesarInput(GLFWwindow* window, int* modoCamara,
     float* camDistancia, float* camAnguloH, float* camAnguloV,
     int* pausado, int* mostrarOrbitas, int* modoTelescopio,
     int* teclaEspacioAntes, int* teclaOAntes,
+    float* velocidadSimulacion, int* teclaMasAntes, int* teclaMenosAntes,
     float deltaTime)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, 1);
@@ -216,6 +217,21 @@ void procesarInput(GLFWwindow* window, int* modoCamara,
         if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) *camAnguloV -= 30.0f * deltaTime;
         if (*camDistancia < 5.0f) *camDistancia = 5.0f;
     }
+
+    // Control de velocidad de simulación (+ / -)
+    int teclaMasAhora = (glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS);
+    if (teclaMasAhora && *teclaMasAntes == GLFW_RELEASE) {
+        *velocidadSimulacion += 0.5f;
+        if (*velocidadSimulacion > 10.0f) *velocidadSimulacion = 10.0f;
+    }
+    *teclaMasAntes = teclaMasAhora;
+
+    int teclaMenosAhora = (glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS);
+    if (teclaMenosAhora && *teclaMenosAntes == GLFW_RELEASE) {
+        *velocidadSimulacion -= 0.5f;
+        if (*velocidadSimulacion < 0.1f) *velocidadSimulacion = 0.1f;
+    }
+    *teclaMenosAntes = teclaMenosAhora;
 }
 
 // Cálculo de la vista según modo de cámara
@@ -377,7 +393,10 @@ int main() {
     // Estado previo de teclas toggle
     int teclaEspacioAntes = GLFW_RELEASE;
     int teclaOAntes = GLFW_RELEASE;
+    int teclaMasAntes = GLFW_RELEASE;
+    int teclaMenosAntes = GLFW_RELEASE;
 
+    float velocidadSimulacion = 1.0f;
     float lastFrame = 0.0f, currentFrame, deltaTime;
 
     while (!glfwWindowShouldClose(window)) {
@@ -386,6 +405,7 @@ int main() {
         procesarInput(window, &modoCamara, &camDistancia, &camAnguloH, &camAnguloV,
             &pausado, &mostrarOrbitas, &modoTelescopio,
             &teclaEspacioAntes, &teclaOAntes,
+            &velocidadSimulacion, &teclaMasAntes, &teclaMenosAntes,
             deltaTime);
 
         glClearColor(0.01f, 0.01f, 0.015f, 1.0f); glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -393,7 +413,7 @@ int main() {
 
         // Solo actualizar ángulos si no está pausado
         if (!pausado)
-            actualizarTodos(cuerpos, deltaTime);
+            actualizarTodos(cuerpos, deltaTime * velocidadSimulacion);
 
         // Posición de la Tierra para dibujar la órbita de la Luna
         glm::vec3 posTierra = glm::vec3(
