@@ -219,7 +219,7 @@ void procesarInput(GLFWwindow* window, int* modoCamara,
     }
 
     // Control de velocidad de simulación (+ / -)
-    int teclaMasAhora = (glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS);
+    int teclaMasAhora = (glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS);
     if (teclaMasAhora && *teclaMasAntes == GLFW_RELEASE) {
         *velocidadSimulacion += 0.5f;
         if (*velocidadSimulacion > 10.0f) *velocidadSimulacion = 10.0f;
