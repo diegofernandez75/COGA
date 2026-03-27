@@ -14,6 +14,7 @@
 const unsigned int SCR_WIDTH  = 1200;
 const unsigned int SCR_HEIGHT = 800;
 
+/// 
 
 // Tiempo entre frames para movimiento independiente de FPS
 float lapsoTime = 0.0f; 
