@@ -1,14 +1,14 @@
 #include "camara.h"
-#include <cmath> // Necesario para usar sin() y cos()
+#include <cmath> //  Para usar sin() y cos()
 
-// Constructor
+// Configuracion inicial de la camara al comenzar
 CamaraGrua::CamaraGrua(int modoInicial) {
     modoActual = modoInicial;
-    anguloHorizontal = 180.0f; // Empieza desde "detrás" de la grúa
-    anguloVertical = 89.9f;   // Empieza mirando desde arriba (cenital puro)
+    anguloHorizontal = 180.0f; // Empieza desde atras de la grúa
+    anguloVertical = 89.9f;   // Empieza mirando desde arriba (cenital)
 }
 
-// Cambiar el modo de cámara
+// Metodo para alternar entre las diferentes vistas (1, 2 o 3)
 void CamaraGrua::setModo(int nuevoModo) {
     modoActual = nuevoModo;
 }
